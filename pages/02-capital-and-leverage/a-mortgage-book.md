@@ -395,12 +395,11 @@ ORDER BY
 STRONG_REFI borrowers originated at rates well above the current Guam effective rate. STRONG_RETENTION borrowers are at rates below current market, meaning a competitor refinance is unlikely. The Rate Gap & Refi page has the full breakdown by product type and the contact-ready queues.
 
 ## How has the product mix evolved?
-
 ```sql market_share
 -- Mortgage product mix by vintage year (2018+)
 -- Source: gold_mortgage_market_share_trends (columns verified from 07_gold lines 289-313)
 SELECT
-    vintage_year
+    CAST(vintage_year AS VARCHAR) AS vintage_year
   , mortgage_type_group
   , mortgage_count
   , total_principal
@@ -410,13 +409,23 @@ FROM gold_mortgage_market_share_trends
 ORDER BY vintage_year, mortgage_type_group
 ```
 
+{% area_chart
+    data="market_share"
+    x="vintage_year"
+    y="total_principal"
+    series="mortgage_type_group"
+    stacked="100%"
+    y_fmt="usd0m"
+    title="Product Mix by Vintage Year (% of Dollar Volume)"
+/%}
+
 {% table data="market_share" page_size=200 order="vintage_year desc" %}
     {% dimension value="vintage_year" title="Vintage" /%}
     {% dimension value="mortgage_type_group" title="Product" /%}
     {% measure value="mortgage_count" title="Count" fmt="num0" /%}
     {% measure value="total_principal" title="Principal" fmt="usd0m" /%}
-    {% measure value="pct_of_count" title="% Count" fmt="pct0" /%}
-    {% measure value="pct_of_volume" title="% Volume" fmt="pct0" /%}
+    {% measure value="pct_of_count" title="% Count" fmt="num0" /%}
+    {% measure value="pct_of_volume" title="% Volume" fmt="num0" /%}
 {% /table %}
 
 Which product types are growing share? Is government-backed lending expanding or contracting? The Rate Environment page shows the macro rate context that drives these shifts.
