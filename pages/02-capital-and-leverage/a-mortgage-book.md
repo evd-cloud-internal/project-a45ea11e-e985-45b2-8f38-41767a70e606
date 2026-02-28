@@ -36,7 +36,7 @@ FROM audit_recording_lag_outliers
 WHERE category = 'Capital & Leverage Intelligence'
 ```
 
-> **{fmt(health_amounts[0].total_instruments, 'num0k')}** instruments in this category. **{fmt(health_amounts[0].pct_with_amount / 100, 'pct0')}** carry a dollar amount. Median recording lag: **{fmt(health_lag[0].median_lag_days, 'num0')} days**.
+> **{% value data="health_amounts" value="total_instruments" fmt="num0k" /%}** instruments in this category. **{% value data="health_amounts" value="pct_with_amount / 100" fmt="pct0" /%}** carry a dollar amount. Median recording lag: **{% value data="health_lag" value="median_lag_days" fmt="num0" /%} days**.
 
 ## Is capital activity stable or shifting?
 
@@ -85,21 +85,21 @@ ORDER BY with_mr.record_month
 -- Unpivot volume data for two-series line chart
 -- Monthly (navy) and 6-Mo Average (gray) per colorblind-safe palette
 SELECT record_month, 'Monthly' AS series, volume AS value
-FROM ${volume_control}
+FROM {{volume_control}}
 
 UNION ALL
 
 SELECT record_month, '6-Mo Average' AS series, volume_6mo_avg AS value
-FROM ${volume_control}
+FROM {{volume_control}}
 ```
 
 ```sql volume_limits
 -- XmR reference lines: Mean, UCL, LCL (constant across time)
-SELECT mean_line AS value, 'Mean' AS label FROM ${volume_control} LIMIT 1
+SELECT mean_line AS value, 'Mean' AS label FROM {{volume_control}} LIMIT 1
 UNION ALL
-SELECT ucl AS value, 'UCL' AS label FROM ${volume_control} LIMIT 1
+SELECT ucl AS value, 'UCL' AS label FROM {{volume_control}} LIMIT 1
 UNION ALL
-SELECT lcl AS value, 'LCL' AS label FROM ${volume_control} LIMIT 1
+SELECT lcl AS value, 'LCL' AS label FROM {{volume_control}} LIMIT 1
 ```
 
 {% line_chart
@@ -167,21 +167,21 @@ ORDER BY with_mr.record_month
 ```sql dollar_series
 -- Unpivot dollar data for two-series line chart
 SELECT record_month, 'Monthly' AS series, dollars AS value
-FROM ${dollar_control}
+FROM {{dollar_control}}
 
 UNION ALL
 
 SELECT record_month, '6-Mo Average' AS series, dollars_6mo_avg AS value
-FROM ${dollar_control}
+FROM {{dollar_control}}
 ```
 
 ```sql dollar_limits
 -- XmR reference lines for dollar chart
-SELECT mean_line AS value, 'Mean' AS label FROM ${dollar_control} LIMIT 1
+SELECT mean_line AS value, 'Mean' AS label FROM {{dollar_control}} LIMIT 1
 UNION ALL
-SELECT ucl AS value, 'UCL' AS label FROM ${dollar_control} LIMIT 1
+SELECT ucl AS value, 'UCL' AS label FROM {{dollar_control}} LIMIT 1
 UNION ALL
-SELECT lcl AS value, 'LCL' AS label FROM ${dollar_control} LIMIT 1
+SELECT lcl AS value, 'LCL' AS label FROM {{dollar_control}} LIMIT 1
 ```
 
 {% line_chart
@@ -265,7 +265,7 @@ WHERE with_mr.volume > limits.ucl
    OR with_mr.volume < limits.lcl
 ```
 
-{#if attention_now.length > 0}
+{% if data="attention_now" %}
 
 {% table data="attention_now" page_size=5 %}
     {% measure value="subcategory" title="Subcategory" /%}
@@ -277,11 +277,12 @@ WHERE with_mr.volume > limits.ucl
 
 A subcategory outside its control limits means the last complete month was statistically unusual. The Signal Detail page in Signal Patterns shows which instruments drove the spike or dip.
 
-{:else}
+{% /if %}
+{% else %}
 
 All subcategories in this category are within normal variation for the last complete month.
 
-{/if}
+{% /else %}
 
 ## This month vs last month
 
