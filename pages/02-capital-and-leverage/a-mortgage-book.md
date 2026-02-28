@@ -4,8 +4,8 @@ assetId: 8ce059aa-b27a-402a-9e43-7af99446aea6
 type: page
 ---
 
----
-title: What is the capital position?
+# What is the capital position? 
+
 ---
 
 Mortgages, modifications, subordinations, bonds, and promissory notes: 17 instrument types that reveal how debt is structured, restructured, and traded across Guam's real estate market. This is the largest revenue-weighted signal family in the platform (signal=10, revenue=10), and the one most directly tied to lending product opportunities.
@@ -268,11 +268,11 @@ WHERE with_mr.volume > limits.ucl
 {% if data="attention_now" %}
 
 {% table data="attention_now" page_size=5 %}
-    {% measure value="subcategory" title="Subcategory" /%}
+    {% dimension value="subcategory" title="Subcategory" /%}
     {% measure value="current_volume" title="Current" fmt="num0" /%}
     {% measure value="mean" title="Mean" fmt="num0" /%}
     {% measure value="ucl" title="UCL" fmt="num0" /%}
-    {% measure value="status" title="Status" /%}
+    {% dimension value="status" title="Status" /%}
 {% /table %}
 
 A subcategory outside its control limits means the last complete month was statistically unusual. The Signal Detail page in Signal Patterns shows which instruments drove the spike or dip.
@@ -341,7 +341,7 @@ ORDER BY SUM(total_principal) DESC NULLS LAST
 ```
 
 {% table data="refi_dashboard" page_size=200 order="total_principal desc" %}
-    {% measure value="product_group" title="Product Group" /%}
+    {% dimension value="product_group" title="Product Group" /%}
     {% measure value="total_mortgages" title="Total" fmt="num0" /%}
     {% measure value="total_principal" title="Principal" fmt="usd0m" /%}
     {% measure value="refi_window" title="Refi Window" fmt="num0" /%}
@@ -382,7 +382,7 @@ ORDER BY
 ```
 
 {% table data="rate_gap_summary" page_size=200 %}
-    {% measure value="rate_gap_opportunity" title="Tier" /%}
+    {% dimension value="rate_gap_opportunity" title="Tier" /%}
     {% measure value="active_count" title="Active Mortgages" fmt="num0" /%}
     {% measure value="active_principal" title="Active Principal" fmt="usd0m" /%}
     {% measure value="wtd_avg_origination_rate" title="Avg Orig. Rate" fmt="pct0" /%}
@@ -409,8 +409,8 @@ ORDER BY vintage_year, mortgage_type_group
 ```
 
 {% table data="market_share" page_size=200 order="vintage_year desc" %}
-    {% measure value="vintage_year" title="Vintage" /%}
-    {% measure value="mortgage_type_group" title="Product" /%}
+    {% dimension value="vintage_year" title="Vintage" /%}
+    {% dimension value="mortgage_type_group" title="Product" /%}
     {% measure value="mortgage_count" title="Count" fmt="num0" /%}
     {% measure value="total_principal" title="Principal" fmt="usd0m" /%}
     {% measure value="pct_of_count" title="% Count" fmt="pct0" /%}
@@ -447,7 +447,7 @@ ORDER BY
 ```
 
 {% table data="ltv_dashboard" page_size=200 %}
-    {% measure value="ltv_tier" title="LTV Tier" /%}
+    {% dimension value="ltv_tier" title="LTV Tier" /%}
     {% measure value="mortgage_count" title="Mortgages" fmt="num0" /%}
     {% measure value="total_principal" title="Principal" fmt="usd0m" /%}
     {% measure value="avg_ltv" title="Avg LTV" fmt="num0" /%}
@@ -524,7 +524,7 @@ LIMIT 15
 /%}
 
 {% table data="transitions" page_size=15 order="transition_count desc" %}
-    {% measure value="target_subcategory" title="Next Signal" /%}
+    {% dimension value="target_subcategory" title="Next Signal" /%}
     {% measure value="transition_count" title="Count" fmt="num0" /%}
     {% measure value="median_days_between" title="Median Days" fmt="num0" /%}
 {% /table %}
@@ -548,8 +548,8 @@ ORDER BY mortgage_type_group, mortgage_type
 ```
 
 {% table data="dim_mortgage_type" page_size=200 %}
-    {% measure value="mortgage_type_group" title="Product Group" /%}
-    {% measure value="mortgage_type" title="Mortgage Type Code" /%}
+    {% dimension value="mortgage_type_group" title="Product Group" /%}
+    {% dimension value="mortgage_type" title="Mortgage Type Code" /%}
 {% /table %}
 
 ## Reference: Capital Instrument Types
@@ -565,8 +565,8 @@ ORDER BY capital_instrument_type
 ```
 
 {% table data="dim_capital" page_size=200 %}
-    {% measure value="capital_instrument_type" title="Capital Type" /%}
-    {% measure value="instrument_type" title="Instrument Type Code" /%}
+    {% dimension value="capital_instrument_type" title="Capital Type" /%}
+    {% dimension value="instrument_type" title="Instrument Type Code" /%}
 {% /table %}
 
 ## Reference: Signal Classification
@@ -587,8 +587,8 @@ ORDER BY instrument_type
 ```
 
 {% table data="dim_signal_cat" page_size=200 %}
-    {% measure value="instrument_type" title="Instrument Type" /%}
-    {% measure value="instrument_sub_type" title="Sub-Type" /%}
+    {% dimension value="instrument_type" title="Instrument Type" /%}
+    {% dimension value="instrument_sub_type" title="Sub-Type" /%}
     {% measure value="signal_weight" title="Signal Wt" fmt="num0" /%}
     {% measure value="distress_weight" title="Distress Wt" fmt="num0" /%}
     {% measure value="revenue_weight" title="Revenue Wt" fmt="num0" /%}
