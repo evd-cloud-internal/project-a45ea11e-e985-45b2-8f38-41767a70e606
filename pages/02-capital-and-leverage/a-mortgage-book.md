@@ -4,9 +4,11 @@ assetId: 8ce059aa-b27a-402a-9e43-7af99446aea6
 type: page
 ---
 
-# What is the capital position? 
-
 ---
+title: What is the capital position?
+---
+
+# What is the capital position?
 
 Mortgages, modifications, subordinations, bonds, and promissory notes: 17 instrument types that reveal how debt is structured, restructured, and traded across Guam's real estate market. This is the largest revenue-weighted signal family in the platform (signal=10, revenue=10), and the one most directly tied to lending product opportunities.
 
@@ -85,21 +87,21 @@ ORDER BY with_mr.record_month
 -- Unpivot volume data for two-series line chart
 -- Monthly (navy) and 6-Mo Average (gray) per colorblind-safe palette
 SELECT record_month, 'Monthly' AS series, volume AS value
-FROM {{volume_control}}
+FROM {{volume_control}} AS volume_control
 
 UNION ALL
 
 SELECT record_month, '6-Mo Average' AS series, volume_6mo_avg AS value
-FROM {{volume_control}}
+FROM {{volume_control}} AS volume_control
 ```
 
 ```sql volume_limits
 -- XmR reference lines: Mean, UCL, LCL (constant across time)
-SELECT mean_line AS value, 'Mean' AS label FROM {{volume_control}} LIMIT 1
+SELECT mean_line AS value, 'Mean' AS label FROM {{volume_control}} AS volume_control LIMIT 1
 UNION ALL
-SELECT ucl AS value, 'UCL' AS label FROM {{volume_control}} LIMIT 1
+SELECT ucl AS value, 'UCL' AS label FROM {{volume_control}} AS volume_control LIMIT 1
 UNION ALL
-SELECT lcl AS value, 'LCL' AS label FROM {{volume_control}} LIMIT 1
+SELECT lcl AS value, 'LCL' AS label FROM {{volume_control}} AS volume_control LIMIT 1
 ```
 
 {% line_chart
@@ -167,21 +169,21 @@ ORDER BY with_mr.record_month
 ```sql dollar_series
 -- Unpivot dollar data for two-series line chart
 SELECT record_month, 'Monthly' AS series, dollars AS value
-FROM {{dollar_control}}
+FROM {{dollar_control}} AS dollar_control
 
 UNION ALL
 
 SELECT record_month, '6-Mo Average' AS series, dollars_6mo_avg AS value
-FROM {{dollar_control}}
+FROM {{dollar_control}} AS dollar_control
 ```
 
 ```sql dollar_limits
 -- XmR reference lines for dollar chart
-SELECT mean_line AS value, 'Mean' AS label FROM {{dollar_control}} LIMIT 1
+SELECT mean_line AS value, 'Mean' AS label FROM {{dollar_control}} AS dollar_control LIMIT 1
 UNION ALL
-SELECT ucl AS value, 'UCL' AS label FROM {{dollar_control}} LIMIT 1
+SELECT ucl AS value, 'UCL' AS label FROM {{dollar_control}} AS dollar_control LIMIT 1
 UNION ALL
-SELECT lcl AS value, 'LCL' AS label FROM {{dollar_control}} LIMIT 1
+SELECT lcl AS value, 'LCL' AS label FROM {{dollar_control}} AS dollar_control LIMIT 1
 ```
 
 {% line_chart
