@@ -288,34 +288,47 @@ All subcategories in this category are within normal variation for the last comp
 
 ## This month vs last month
 
+```sql this_month_glance
+-- Capital & Leverage: latest two months for comparison
+-- Source: gold_signal_velocity_trends
+-- Filter: category = 'Capital & Leverage Intelligence'
+WITH months AS (
+    SELECT DISTINCT record_month
+    FROM gold_signal_velocity_trends
+    WHERE category = 'Capital & Leverage Intelligence'
+    ORDER BY record_month DESC NULLS LAST
+    LIMIT 2
+)
+SELECT
+    SUM(CASE WHEN record_month = (SELECT MAX(record_month) FROM months) THEN current_month_count ELSE 0 END) AS current_instruments
+  , SUM(CASE WHEN record_month = (SELECT MIN(record_month) FROM months) THEN current_month_count ELSE 0 END) AS prior_instruments
+  , SUM(CASE WHEN record_month = (SELECT MAX(record_month) FROM months) THEN current_month_amount ELSE 0 END) AS current_dollars
+  , SUM(CASE WHEN record_month = (SELECT MIN(record_month) FROM months) THEN current_month_amount ELSE 0 END) AS prior_dollars
+FROM gold_signal_velocity_trends
+WHERE category = 'Capital & Leverage Intelligence'
+  AND record_month IN (SELECT record_month FROM months)
+```
+
 {% big_value
-    data="gold_signal_velocity_trends"
-    value="sum(current_month_count)"
+    data="this_month_glance"
+    value="current_instruments"
     title="Instruments"
     fmt="num0"
-    where="category = 'Capital & Leverage Intelligence'"
-    date_range={
-        date="record_month"
-        range="previous month"
-    }
     comparison={
-        compare_vs="prior period"
+        compare_vs="target"
+        target="prior_instruments"
         pct_fmt="pct0"
     }
 /%}
 
 {% big_value
-    data="gold_signal_velocity_trends"
-    value="sum(current_month_amount)"
+    data="this_month_glance"
+    value="current_dollars"
     title="Dollar Volume"
     fmt="usd0m"
-    where="category = 'Capital & Leverage Intelligence'"
-    date_range={
-        date="record_month"
-        range="previous month"
-    }
     comparison={
-        compare_vs="prior period"
+        compare_vs="target"
+        target="prior_dollars"
         pct_fmt="pct0"
     }
 /%}
