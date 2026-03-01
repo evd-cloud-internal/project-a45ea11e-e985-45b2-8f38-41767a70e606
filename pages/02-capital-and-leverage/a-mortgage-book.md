@@ -69,13 +69,13 @@ WITH monthly AS (
 )
 SELECT
     with_mr.record_month
-  , with_mr.volume
+  , CAST(with_mr.volume AS Float64) AS volume
   , ROUND(AVG(with_mr.volume) OVER (
       ORDER BY with_mr.record_month
       ROWS BETWEEN 5 PRECEDING AND CURRENT ROW), 0) AS volume_6mo_avg
   , ROUND(stats.mean_vol, 0) AS mean_line
   , ROUND(stats.mean_vol + 3 * (stats.avg_mr / 1.128), 0) AS ucl
-  , GREATEST(0, ROUND(stats.mean_vol - 3 * (stats.avg_mr / 1.128), 0)) AS lcl
+  , GREATEST(CAST(0 AS Float64), ROUND(stats.mean_vol - 3 * (stats.avg_mr / 1.128), 0)) AS lcl
 FROM with_mr
 CROSS JOIN stats
 -- Trim leading partial month (silver.monthly_signal_velocity 3-year window edge)
@@ -339,7 +339,7 @@ SELECT
   , SUM(equity_rich_count) AS equity_rich
 FROM gold_refi_opportunity_dashboard
 GROUP BY mortgage_type_group
-ORDER BY SUM(total_principal) DESC NULLS LAST
+ORDER BY total_principal DESC NULLS LAST
 ```
 
 {% table data="refi_dashboard" page_size=200 order="total_principal desc" %}
@@ -416,6 +416,7 @@ ORDER BY vintage_year, mortgage_type_group
     series="mortgage_type_group"
     stacked="100%"
     y_fmt="usd0m"
+    x_fmt="####"
     title="Product Mix by Vintage Year (% of Dollar Volume)"
 /%}
 
@@ -436,17 +437,29 @@ Which product types are growing share? Is government-backed lending expanding or
 -- LTV distribution across active mortgage portfolio
 -- Source: gold_ltv_equity_dashboard (columns verified from 07_gold lines 678-706)
 -- LTV tier values verified from 07_gold lines 699-703
+-- Subquery avoids ClickHouse nested-aggregate error
 SELECT
     ltv_tier
-  , SUM(mortgage_count) AS mortgage_count
-  , SUM(total_principal) AS total_principal
-  , ROUND(SUM(mortgage_count * avg_ltv) / NULLIF(SUM(mortgage_count), 0), 0) AS avg_ltv
-  , ROUND(SUM(mortgage_count * avg_estimated_equity) / NULLIF(SUM(mortgage_count), 0), 0) AS avg_equity
-  , SUM(equity_rich_count) AS equity_rich_count
-  , SUM(underwater_count) AS underwater_count
-  , ROUND(SUM(pct_of_portfolio * mortgage_count) / NULLIF(SUM(mortgage_count), 0), 0) AS pct_of_portfolio
-FROM gold_ltv_equity_dashboard
-GROUP BY ltv_tier
+  , sum_mortgage_count AS mortgage_count
+  , sum_total_principal AS total_principal
+  , ROUND(weighted_ltv / NULLIF(sum_mortgage_count, 0), 0) AS avg_ltv
+  , ROUND(weighted_equity / NULLIF(sum_mortgage_count, 0), 0) AS avg_equity
+  , sum_equity_rich AS equity_rich_count
+  , sum_underwater AS underwater_count
+  , ROUND(weighted_pct / NULLIF(sum_mortgage_count, 0), 0) AS pct_of_portfolio
+FROM (
+    SELECT
+        ltv_tier
+      , SUM(mortgage_count) AS sum_mortgage_count
+      , SUM(total_principal) AS sum_total_principal
+      , SUM(mortgage_count * avg_ltv) AS weighted_ltv
+      , SUM(mortgage_count * avg_estimated_equity) AS weighted_equity
+      , SUM(equity_rich_count) AS sum_equity_rich
+      , SUM(underwater_count) AS sum_underwater
+      , SUM(pct_of_portfolio * mortgage_count) AS weighted_pct
+    FROM gold_ltv_equity_dashboard
+    GROUP BY ltv_tier
+) sub
 ORDER BY
     CASE ltv_tier
         WHEN 'UNDER_60' THEN 1

@@ -5,7 +5,7 @@ type: page
 ---
 
 ---
-Beacons
+title: Beacons
 ---
 
 <!-- ================================================================
@@ -82,7 +82,7 @@ FROM audit_data_freshness
     {% big_value data="classification_pct" value="value" title="Classification Coverage" fmt="pct0" /%}
     {% big_value data="linked_properties" value="value" title="Property-Linked Instruments" fmt="num0k" /%}
     {% big_value data="active_mortgages" value="value" title="Active Mortgages" fmt="num0k" /%}
-    {% big_value data="data_freshness" value="value" title="Most Recent Recording" /%}
+    {% big_value data="data_freshness" value="value" title="Most Recent Recording" fmt="shortdate" /%}
     {% big_value data="data_freshness" value="days_since_last_record" title="Days Since Last Record" fmt="num0" /%}
 {% /row %}
 
@@ -158,7 +158,7 @@ ORDER BY
     {% dimension value="question" /%}
     {% dimension value="sidebar_folder" title="Sidebar" /%}
     {% measure value="current_month" title="Last Month" fmt="num0" /%}
-    {% measure value="change" title="Change" fmt="num0" /%}
+    {% measure value="change" title="Change" fmt="num0" viz="delta" /%}
     {% measure value="six_month_avg" title="6-Mo Avg" fmt="num0" /%}
 {% /table %}
 
