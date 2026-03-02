@@ -333,38 +333,48 @@ WHERE category = 'Capital & Leverage Intelligence'
     }
 /%}
 
-## The mortgage book
-
-```sql refi_dashboard
--- Mortgage product breakdown with refi window and eligibility counts
--- Source: gold_refi_opportunity_dashboard (columns verified from 07_gold lines 224-280)
+## The Active Mortgage Book
+```sql mortgage_book
+-- Active mortgage book by product group with eligibility flags
+-- Source: gold_refi_opportunity_dashboard (v5.6.1, filtered to is_likely_active)
+-- Columns verified from updated 07_gold view definition
 SELECT
     mortgage_type_group AS product_group
-  , SUM(total_mortgages) AS total_mortgages
-  , SUM(total_principal) AS total_principal
-  , SUM(refi_window_count) AS refi_window
-  , SUM(refi_window_volume) AS refi_window_volume
+  , SUM(total_mortgages) AS active_mortgages
+  , SUM(total_principal) AS active_principal
   , SUM(va_irrrl_ready) AS va_irrrl
   , SUM(fha_streamline_ready) AS fha_streamline
   , SUM(heloc_reset_window) AS heloc_reset
+  , SUM(equity_rich_count) AS equity_rich
   , SUM(private_conversion_ready) AS private_conversion
   , SUM(const_perm_ready) AS construction_perm
-  , SUM(equity_rich_count) AS equity_rich
 FROM gold_refi_opportunity_dashboard
 GROUP BY mortgage_type_group
-ORDER BY total_principal DESC NULLS LAST
+ORDER BY active_principal DESC NULLS LAST
 ```
 
-{% table data="refi_dashboard" page_size=200 order="total_principal desc" %}
+{% table data="mortgage_book" page_size=200 order="active_principal desc" %}
     {% dimension value="product_group" title="Product Group" /%}
-    {% measure value="total_mortgages" title="Total" fmt="num0" /%}
-    {% measure value="total_principal" title="Principal" fmt="usd0m" /%}
-    {% measure value="refi_window" title="Refi Window" fmt="num0" /%}
+    {% measure value="active_mortgages" title="Active" fmt="num0" /%}
+    {% measure value="active_principal" title="Principal" fmt="usd0m" /%}
     {% measure value="va_irrrl" title="VA IRRRL" fmt="num0" /%}
     {% measure value="fha_streamline" title="FHA Stream." fmt="num0" /%}
     {% measure value="heloc_reset" title="HELOC Reset" fmt="num0" /%}
     {% measure value="equity_rich" title="Equity Rich" fmt="num0" /%}
 {% /table %}
+
+All counts are estimated active mortgages based on term assumptions. VA IRRRL, FHA Streamline, and HELOC Reset are government program eligibility flags with minimum seasoning requirements. Equity Rich means the property has an estimated LTV under 60%. The Rate Gap & Refi page in this folder breaks these numbers down by rate opportunity tier and provides contact-ready work queues.
+
+### Conversion Opportunities
+
+{% table data="mortgage_book" page_size=200 order="active_principal desc" %}
+    {% dimension value="product_group" title="Product Group" /%}
+    {% measure value="active_mortgages" title="Active" fmt="num0" /%}
+    {% measure value="private_conversion" title="Private to Bank" fmt="num0" /%}
+    {% measure value="construction_perm" title="Construction to Perm" fmt="num0" /%}
+{% /table %}
+
+Private to Bank counts private mortgages seasoned 12+ months, candidates for institutional refinance. Construction to Perm counts construction loans at 6 to 18 months, approaching the permanent financing window.
 
 The refi window column counts active mortgages originated 24 to 60 months ago. VA IRRRL, FHA Streamline, and HELOC Reset are government program eligibility flags. Equity Rich means the property has an estimated LTV under 60%. The Rate Gap & Refi page in this folder breaks these numbers down by rate opportunity tier and provides contact-ready work queues.
 
@@ -378,11 +388,11 @@ SELECT
     rate_gap_opportunity
   , active_count
   , ROUND(active_principal, 0) AS active_principal
-  , wtd_avg_origination_rate
-  , wtd_avg_rate_gap
+  , wtd_avg_origination_rate / 100.0 AS wtd_avg_origination_rate
+  , wtd_avg_rate_gap / 100.0 AS wtd_avg_rate_gap
   , refi_sweet_spot_count
   , govt_streamline_count
-  , ROUND(pct_of_active_principal, 0) AS pct_of_portfolio
+  , pct_of_active_principal / 100.0 AS pct_of_portfolio
 FROM gold_rate_gap_portfolio_summary
 WHERE detail_level = 'ALL_TYPES'
 ORDER BY
@@ -400,8 +410,8 @@ ORDER BY
     {% dimension value="rate_gap_opportunity" title="Tier" /%}
     {% measure value="active_count" title="Active Mortgages" fmt="num0" /%}
     {% measure value="active_principal" title="Active Principal" fmt="usd0m" /%}
-    {% measure value="wtd_avg_origination_rate" title="Avg Orig. Rate" fmt="pct0" /%}
-    {% measure value="wtd_avg_rate_gap" title="Avg Rate Gap" fmt="num0" /%}
+    {% measure value="wtd_avg_origination_rate" title="Avg Orig. Rate" fmt="pct2" /%}
+    {% measure value="wtd_avg_rate_gap" title="Avg Rate Gap" fmt="pct2" /%}
     {% measure value="pct_of_portfolio" title="% of Portfolio" fmt="pct0" /%}
 {% /table %}
 
